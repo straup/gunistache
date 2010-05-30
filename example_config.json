@@ -1,0 +1,27 @@
+{
+    "gunistache": {
+	"name": "tileserver",
+	"app_dir": "."
+    },
+
+    "cache": {
+        "path": "/var/tilestache",
+        "name": "Disk"
+    },
+
+    "layers": {
+
+        "osm": {
+            "provider": {
+                "name": "proxy",
+                "provider": "OPENSTREETMAP"
+            },
+            "projection": "spherical mercator",
+            "metatile": {
+                "rows": 4,
+                "columns": 4
+            }
+        }
+
+    }
+}

@@ -1,0 +1,40 @@
+gunistache is a very simple CLI wrapper to run a WSGI-derived TileStache server
+on top of gunicorn.
+
+It exists only because there is still no way to pass an application-specific
+config file (that is something that your code can read at runtime) to gunicorn.
+
+It works likes this:
+
+	$> gunistache [--gunicorn-options] example_config.json
+
+What happens under the hood is this:
+
+* The example_config.json file is parsed and checked for a gunistache['name]'
+  key which is used to generate a new gunicorn script/handler with code to
+  render and cache map tiles using TileStache.
+
+* The example_config.json file is the same config file/data that TileStache uses
+  to know what types of tiles to generate and how to render them. The path to
+  the config file is hardcoded in the new gunicorn script/handler.
+
+* By default these new handlers are written to a directory called 'gunistache'
+  in your operating system's "tmp" directory. You can override this setting by
+  specifying a gunistache['app_dir'] value in the config file. For example:
+
+	"gunistache": {
+		"name": "tileserver",
+		"app_dir": "."
+	}
+
+* Once that is done the code is executed by handing everything back off to
+  gunicorn.
+
+That's it. There are no ponies. Some day this code will (hopefully) be
+unnecessary.
+
+See also:
+
+* http://github.com/benoitc/gunicorn
+
+* http://github.com/migurski/TileStache

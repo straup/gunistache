@@ -1,0 +1,103 @@
+#!/usr/bin/env python
+
+def generate_app(config_file):
+
+    return """
+import TileStache
+config = TileStache.parseConfigfile('%s')
+
+def app(environ, start_response):
+
+    layer, coord, ext = TileStache._splitPathInfo(environ['PATH_INFO'])
+
+    if not config.layers.get(layer, False):
+        status = '404 NOT FOUND'
+        data = ''
+
+    else:
+
+        try:
+            content_type, data = TileStache.handleRequest(config.layers[layer], coord, ext)
+            status = '200 OK'
+
+        except Exception, e:
+            status = '500 SERVER ERROR'
+            data = str(e)
+
+    response_headers = [
+        ('Content-type', type),
+        ('Content-Length', str(len(data)))
+    ]
+
+    start_response(status, response_headers)
+    return iter([data])    
+""" % config_file
+
+if __name__ == '__main__':
+
+    import sys
+    import json
+    import os
+    import os.path
+    import tempfile
+    import logging
+
+    from gunicorn.app.wsgiapp import WSGIApplication
+
+    # first check that there is a json/onfig file to work with
+    
+    config_file = sys.argv.pop()
+
+    try:
+	config = json.load(open(config_file, 'r'))
+    except Exception, e:
+    	logging.error('invalid json file, %s' % e)
+        sys.exit()
+
+    # make sure there are some basic configs
+    
+    if not config.get('gunistache', False):
+    	logging.error('')
+    	sys.exit()
+
+    if not config['gunistache'].get('name', False):
+    	logging.error('')
+        sys.exit()
+
+    # check for a place to put things
+    
+    app_dir = config['gunistache'].get('app_dir', None)
+
+    if not app_dir:
+	tmp = tempfile.gettempdir()
+    	app_dir = os.path.join(tmp, 'gunistache')
+
+    if not os.path.exists(app_dir):
+    	os.makedirs(app_dir)
+        
+    name = config['gunistache']['name']
+    app_name = '%s:app' % name
+
+    app_path = os.path.join(app_dir, '%s.py' % name)
+
+    # generate a thing that gunicorn can use, with
+    # the path to the config file hard-coded 
+    
+    try:
+	fh = open(app_path, 'w')
+    	fh.write(generate_app(os.path.abspath(config_file)))
+    	fh.close()
+    except Exception, e:
+    	logging.error('failed to open %s for writing, %s' % (app_path, e))
+    	sys.exit()
+
+    # blow smoke in to gunicorn's eyes
+    
+    sys.path.insert(0, app_dir)
+    sys.argv.append(app_name)
+
+    # proceed normally
+    
+    WSGIApplication("%prog [OPTIONS] APP_MODULE").run()
+
+# -*- indent-table-mode:nill tab-width:4 -*-
