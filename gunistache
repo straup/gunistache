@@ -11,7 +11,7 @@ def application(environ, start_response):
     layer, coord, ext = TileStache._splitPathInfo(environ['PATH_INFO'])
 
     if not config.layers.get(layer, False):
-        print >> environ['wsgi.errors'], "[gunistache] unknown layer: %s" % layer
+        print >> environ['wsgi.errors'], "[gunistache] unknown layer: " + layer
         status = '404 NOT FOUND'
         data = ''
 
@@ -22,7 +22,7 @@ def application(environ, start_response):
             status = '200 OK'
 
         except Exception, e:
-            print >> environ['wsgi.errors'], "[gunistache] failed to handle request: %s" % str(e)
+            print >> environ['wsgi.errors'], "[gunistache] failed to handle request:" + str(e)
             status = '500 SERVER ERROR'
             data = str(e)
 
@@ -33,8 +33,6 @@ def application(environ, start_response):
         ('Content-type', str(type)),
         ('Content-Length', str(len(data)))
     ]
-
-    # print >> environ['wsgi.errors'], "[gunistache] %s %s : %s" % (layer, coord, status)
 
     start_response(status, response_headers)
     return iter([data])
