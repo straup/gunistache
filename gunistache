@@ -6,7 +6,7 @@ def generate_app(config_file):
 import TileStache
 config = TileStache.parseConfigfile('%s')
 
-def app(environ, start_response):
+def application(environ, start_response):
 
     layer, coord, ext = TileStache._splitPathInfo(environ['PATH_INFO'])
 
@@ -24,8 +24,11 @@ def app(environ, start_response):
             status = '500 SERVER ERROR'
             data = str(e)
 
+    # mod_wsgi hates unicode apparently
+    # so make sure everything is a str.
+
     response_headers = [
-        ('Content-type', type),
+        ('Content-type', str(type)),
         ('Content-Length', str(len(data)))
     ]
 
@@ -80,7 +83,7 @@ if __name__ == '__main__':
         os.makedirs(app_dir)
 
     name = config['gunistache']['name']
-    app_name = '%s:app' % name
+    app_name = '%s:application' % name
 
     app_path = os.path.join(app_dir, '%s.py' % name)
 
