@@ -24,6 +24,7 @@ def application(environ, start_response):
         except Exception, e:
             print >> environ['wsgi.errors'], "[gunistache] failed to handle request:" + str(e)
             status = '500 SERVER ERROR'
+            content_type = 'text/plain'
             data = str(e)
 
     # mod_wsgi hates unicode apparently
