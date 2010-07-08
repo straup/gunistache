@@ -30,7 +30,7 @@ def application(environ, start_response):
     # so make sure everything is a str.
 
     response_headers = [
-        ('Content-type', str(type)),
+        ('Content-type', str(content_type)),
         ('Content-Length', str(len(data)))
     ]
 
