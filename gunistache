@@ -8,24 +8,21 @@ config = TileStache.parseConfigfile('%s')
 
 def application(environ, start_response):
 
-    layer, coord, ext = TileStache.splitPathInfo(environ['PATH_INFO'])
+    path_info = environ.get('PATH_INFO', None)
+    query_string = environ.get('QUERY_STRING', None)
 
-    if not config.layers.get(layer, False):
-        print >> environ['wsgi.errors'], "[gunistache] unknown layer: " + layer
-        status = '404 NOT FOUND'
-        data = ''
+    content_type, data = TileStache.requestHandler(config, path_info, query_string)
+    status = '200 OK'
 
-    else:
+    try:
+        content_type, data = TileStache.requestHandler(config, path_info, query_string)
+        status = '200 OK'
 
-        try:
-            content_type, data = TileStache.handleRequest(config.layers[layer], coord, ext)
-            status = '200 OK'
-
-        except Exception, e:
-            print >> environ['wsgi.errors'], "[gunistache] failed to handle request:" + str(e)
-            status = '500 SERVER ERROR'
-            content_type = 'text/plain'
-            data = str(e)
+    except Exception, e:
+        print >> environ['wsgi.errors'], "[gunistache] failed to handle request:" + str(e)
+        status = '500 SERVER ERROR'
+	content_type = 'text/plain'
+        data = str(e)
 
     # mod_wsgi hates unicode apparently
     # so make sure everything is a str.
@@ -106,6 +103,7 @@ if __name__ == '__main__':
     sys.path.insert(0, app_dir)
     sys.argv.append(app_name)
 
+    print sys.argv
     # proceed normally
 
     WSGIApplication("%prog [OPTIONS] APP_MODULE").run()

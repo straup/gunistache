@@ -6,7 +6,7 @@ config file (that is something that your code can read at runtime) to gunicorn.
 
 It works likes this:
 
-	$> gunistache [--gunicorn-options] example_config.json
+	$> /gunistache -w 4 -k egg:gunicorn#gevent -b localhost:8000 config.json
 
 What happens under the hood is this:
 
