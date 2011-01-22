@@ -1,3 +1,6 @@
+# NOTE: THIS IS NO LONGER NECESSARY AS OF TILESTACHE 1.6:
+# http://tilestache.org/doc/#wsgi
+
 gunistache is a very simple CLI wrapper to run a WSGI-derived TileStache server
 on top of gunicorn.
 
